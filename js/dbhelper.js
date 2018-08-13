@@ -92,10 +92,10 @@ class DBHelper {
         callback(error, null);
       } else {
         let results = restaurants
-        if (cuisine != 'all') { // filter by cuisine
+        if (cuisine != 'all cuisines') { // filter by cuisine
           results = results.filter(r => r.cuisine_type == cuisine);
         }
-        if (neighborhood != 'all') { // filter by neighborhood
+        if (neighborhood != 'all neighborhoods') { // filter by neighborhood
           results = results.filter(r => r.neighborhood == neighborhood);
         }
         callback(null, results);
@@ -152,6 +152,34 @@ class DBHelper {
   static imageUrlForRestaurant(restaurant) {
     return (`/img/${restaurant.photograph}`);
   }
+
+  /**
+   * Restaurant source image URL - Large.
+   */
+  static imageSourceLargeForRestaurant(restaurant) {
+    let photo_source = restaurant.photograph;
+    photo_source = photo_source.replace(".jpg", "");
+    photo_source = `/img/${photo_source}-800_large_2x.jpg 2x, /img/${photo_source}-800_large_1x.jpg`;
+    return photo_source;
+  }
+
+  /**
+   * Restaurant source image URL - Medium.
+   */
+  static imageSourceMediumForRestaurant(restaurant) {
+    let photo_source = restaurant.photograph;
+    photo_source = photo_source.replace(".jpg", "");
+    photo_source = `/img/${photo_source}-600_medium_2x.jpg 2x, /img/${photo_source}-600_medium_1x.jpg`;
+    return photo_source;
+  }
+
+  /**
+   * Restaurant image URL.
+   */
+  static imageAltText(restaurant) {
+    return (restaurant.photo_alt);
+  }
+
 
   /**
    * Map marker for a restaurant.
