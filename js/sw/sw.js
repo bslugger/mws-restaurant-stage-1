@@ -1,13 +1,13 @@
-var staticCacheName = 'mws-restaurant-stage-1';
-// var contentImgsCache = 'wittr-content-imgs';
-var allCaches = [
-  staticCacheName,
-  // contentImgsCache
-];
+let staticCacheName = 'mws-restaurant-stage-1';
+let cacheWhitelist = [ staticCacheName ];
 
-self.addEventListener('install', function(event) {
+/**
+* Install new cache
+* from: https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API/Using_Service_Workers#Install_and_activate_populating_your_cache
+**/
+self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(staticCacheName).then(function(cache) {
+    caches.open(staticCacheName).then( cache => {
       return cache.addAll([
         '/data',
         '/js/main.js',
@@ -20,52 +20,31 @@ self.addEventListener('install', function(event) {
   );
 });
 
-self.addEventListener('activate', function(event) {
+/**
+* Delete old caches
+* from: https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API/Using_Service_Workers#Deleting_old_caches
+**/
+self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys().then(function(cacheNames) {
+    caches.keys().then( keyList => {
       return Promise.all(
-        cacheNames.filter(function(cacheName) {
-          return cacheName.startsWith('mws-') &&
-                 !allCaches.includes(cacheName);
-        }).map(function(cacheName) {
-          return caches.delete(cacheName);
+        keyList.map( key => {
+          if ( !cacheWhitelist.includes(key) ) {
+            return caches.delete(key);
+          }
         })
       );
     })
   );
 });
 
-
-
 /**
-* This gives you the "Cache only" behavior for things in the cache
-* and the "Network only" behaviour for anything not cached (which 
-* includes all non-GET requests, as they cannot be cached).
+* If the resources isn't in the cache, it is requested from the network.
+* from: https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API/Using_Service_Workers#Recovering_failed_requests
 **/
-self.addEventListener('fetch', function(event) {
-  if (event.request.url.indexOf('https://maps.googleapis.com/maps') == 0) {
-    console.log('inside google maps fetch')
-    event.respondWith(
-        // Handle Maps API requests in a generic fashion,
-        // by returning a Promise that resolves to a Response.
-        function(){
-          console.log('inside google map respondWith')
-          const returnedPromise = new Promise((resolve, reject) => {
-            setTimeout(function(){
-              resolve(function(){
-                  const myResponse = new Response( "offline", { "status" : 200, "statusText": "inside response" });
-                  return myResponse;
-              });
-            }, 100);
-          });
-          return returnedPromise
-        }
-    );
-  }
-
-  console.log('not inside google maps fetch');
+self.addEventListener('fetch', event => {
   event.respondWith(
-    caches.match(event.request).then(function(response) {
+    caches.match(event.request).then( response => {
       return response || fetch(event.request);
     })
   );
