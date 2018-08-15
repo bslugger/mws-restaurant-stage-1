@@ -1,15 +1,8 @@
-// import IndexController from './IndexController.js';
-
 let restaurants,
   neighborhoods,
   cuisines;
-var map;
-var markers = [];
-
-
-// indexStart = () => {
-//   new IndexController(document.querySelector('.main'));
-// }
+let map;
+let markers = [];
 
 /**
  * Fetch neighborhoods and cuisines as soon as the page is loaded.
@@ -19,8 +12,10 @@ document.addEventListener('DOMContentLoaded', (event) => {
   fetchCuisines();
   registerServiceWorker();
 
+  // Place the script in the head if there is online access, otherwise
+  // call the function that would have been executed in the script's callback
   if( navigator.onLine ){
-    var script = document.createElement('script');
+    const script = document.createElement('script');
     script.src = '//maps.googleapis.com/maps/api/js?key=AIzaSyDEzTdwKnrAUxK8CHLf8lWcDC-dgI3QiYk&libraries=places&callback=initMap';
     script.async = false;
     script.defer = true;
@@ -178,12 +173,12 @@ fillRestaurantsHTML = (restaurants = self.restaurants) => {
 }
 
 /**
- * Create restaurant HTML.
+ * Create restaurant HTML as its own list item, with responsive images
  */
 createRestaurantHTML = (restaurant) => {
   const li = document.createElement('li');
-
   const picture = document.createElement('picture');
+
   const sourceLarge = document.createElement('source');
   sourceLarge.media = "(min-width: 960px)";
   sourceLarge.srcset = DBHelper.imageSourceLargeForRestaurant(restaurant);
@@ -192,12 +187,12 @@ createRestaurantHTML = (restaurant) => {
   sourceMedium.media = "(max-width: 960px)";
   sourceMedium.srcset = DBHelper.imageSourceMediumForRestaurant(restaurant);
 
-
   const image = document.createElement('img');
   image.className = 'restaurant-img';
   image.src = DBHelper.imageUrlForRestaurant(restaurant);
   image.alt = DBHelper.imageAltText(restaurant);
 
+  // nest responsive images inside picture element
   picture.append(sourceLarge);
   picture.append(sourceMedium);
   picture.append(image);

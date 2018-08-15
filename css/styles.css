@@ -1,6 +1,7 @@
 @charset "utf-8";
 /* CSS Document */
 
+/* ====================== Main elements ====================== */
 body,td,th,p{
 	font-family: Arial, Helvetica, sans-serif;
 	font-size: 1em;
@@ -59,6 +60,7 @@ article, aside, canvas, details, figcaption, figure, footer, header, hgroup, men
   text-transform: uppercase;
 }
 
+/* ====================== Helper Classes ====================== */
 .skip-link {
   display: hidden;
   position: absolute;
@@ -74,7 +76,6 @@ article, aside, canvas, details, figcaption, figure, footer, header, hgroup, men
   top: 0;
 }
 
-/* ====================== Helper Classes ====================== */
 .hidden {
   display: none;
 }
@@ -180,7 +181,7 @@ nav h1 a {
   display: grid;
   grid-gap: 10px;
   grid-template-columns: repeat(auto-fill, minmax(50%, 1fr) );
-  /* auto-fill technique taken from https://gridbyexample.com/examples/example28/ */
+  /* auto-fill technique attributed to https://gridbyexample.com/examples/example28/ */
 }
 
 #restaurants-list li {
@@ -345,6 +346,7 @@ nav h1 a {
   color: #666;
 }
 
+/* ====================== Media Queries ====================== */
 @media screen and (min-width: 640px) {
 
   #restaurants-list {
@@ -353,7 +355,7 @@ nav h1 a {
 
 }
 
-@media (min-width: 1080px) {
+@media screen and (min-width: 1080px) {
   body {
     background-color: #252831;
   }

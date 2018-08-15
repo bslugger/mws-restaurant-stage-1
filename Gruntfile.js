@@ -1,4 +1,7 @@
 /*
+Code attributed to Lesson 9: Full Responsiveness, Concepts 10: Quiz, Project 3
+http://udacity.github.io/responsive-images/downloads/RI-Project-Part-3-Start.zip
+
  After you have changed the settings under responsive_images
  run this with one of these options:
   "grunt" alone creates a new, completed images directory
