@@ -1,8 +1,8 @@
 let restaurants,
   neighborhoods,
-  cuisines
-var map
-var markers = []
+  cuisines;
+let map;
+let markers = [];
 
 /**
  * Fetch neighborhoods and cuisines as soon as the page is loaded.
@@ -10,7 +10,39 @@ var markers = []
 document.addEventListener('DOMContentLoaded', (event) => {
   fetchNeighborhoods();
   fetchCuisines();
+  registerServiceWorker();
+
+  // Place the script in the head if there is online access, otherwise
+  // call the function that would have been executed in the script's callback
+  if( navigator.onLine ){
+    const script = document.createElement('script');
+    script.src = '//maps.googleapis.com/maps/api/js?key=AIzaSyDEzTdwKnrAUxK8CHLf8lWcDC-dgI3QiYk&libraries=places&callback=initMap';
+    script.async = false;
+    script.defer = true;
+    document.head.appendChild(script);
+  } else {
+    updateRestaurants();
+  }
 });
+
+
+/**
+ * Fetch the script that installs the service worker
+ */
+registerServiceWorker = () => {
+  if ('serviceWorker' in navigator) {
+    // Register a service worker hosted at the root of the
+    // site using the default scope.
+    navigator.serviceWorker.register('/js/sw/sw.js').then(function(registration) {
+      console.log('Service worker registration succeeded:', registration);
+    }, /*catch*/ function(error) {
+      console.log('Service worker registration failed:', error);
+    });
+  } else {
+    console.log('Service workers are not supported.');
+  }
+}
+
 
 /**
  * Fetch all neighborhoods and set their HTML.
@@ -70,16 +102,19 @@ fillCuisinesHTML = (cuisines = self.cuisines) => {
 /**
  * Initialize Google map, called from HTML.
  */
-window.initMap = () => {
+initMap = () => {
   let loc = {
     lat: 40.722216,
     lng: -73.987501
   };
+
   self.map = new google.maps.Map(document.getElementById('map'), {
     zoom: 12,
     center: loc,
-    scrollwheel: false
+    scrollwheel: false,
+    title: "Restaurant reviews for New York City"
   });
+
   updateRestaurants();
 }
 
@@ -95,6 +130,9 @@ updateRestaurants = () => {
 
   const cuisine = cSelect[cIndex].value;
   const neighborhood = nSelect[nIndex].value;
+
+  cSelect.setAttribute('aria-activedescendant', cuisine);
+  nSelect.setAttribute('aria-activedescendant', neighborhood);
 
   DBHelper.fetchRestaurantByCuisineAndNeighborhood(cuisine, neighborhood, (error, restaurants) => {
     if (error) { // Got an error!
@@ -129,22 +167,44 @@ fillRestaurantsHTML = (restaurants = self.restaurants) => {
   restaurants.forEach(restaurant => {
     ul.append(createRestaurantHTML(restaurant));
   });
-  addMarkersToMap();
+  if( navigator.onLine ){
+    addMarkersToMap();
+  }
 }
 
 /**
- * Create restaurant HTML.
+ * Create restaurant HTML as its own list item, with responsive images
  */
 createRestaurantHTML = (restaurant) => {
   const li = document.createElement('li');
+  const picture = document.createElement('picture');
+
+  const sourceLarge = document.createElement('source');
+  sourceLarge.media = "(min-width: 960px)";
+  sourceLarge.srcset = DBHelper.imageSourceLargeForRestaurant(restaurant);
+
+  const sourceMedium = document.createElement('source');
+  sourceMedium.media = "(max-width: 960px)";
+  sourceMedium.srcset = DBHelper.imageSourceMediumForRestaurant(restaurant);
 
   const image = document.createElement('img');
   image.className = 'restaurant-img';
   image.src = DBHelper.imageUrlForRestaurant(restaurant);
-  li.append(image);
+  image.alt = DBHelper.imageAltText(restaurant);
+
+  // nest responsive images inside picture element
+  picture.append(sourceLarge);
+  picture.append(sourceMedium);
+  picture.append(image);
+  li.append(picture);
 
   const name = document.createElement('h1');
-  name.innerHTML = restaurant.name;
+  const link = document.createElement('a');
+  link.className = "restaurant-link";
+  link.innerHTML = restaurant.name;
+  link.href = DBHelper.urlForRestaurant(restaurant);
+  
+  name.append(link);
   li.append(name);
 
   const neighborhood = document.createElement('p');
@@ -154,11 +214,6 @@ createRestaurantHTML = (restaurant) => {
   const address = document.createElement('p');
   address.innerHTML = restaurant.address;
   li.append(address);
-
-  const more = document.createElement('a');
-  more.innerHTML = 'View Details';
-  more.href = DBHelper.urlForRestaurant(restaurant);
-  li.append(more)
 
   return li
 }

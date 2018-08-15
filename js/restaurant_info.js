@@ -1,5 +1,5 @@
 let restaurant;
-var map;
+let map;
 
 /**
  * Initialize Google map, called from HTML.
@@ -12,13 +12,22 @@ window.initMap = () => {
       self.map = new google.maps.Map(document.getElementById('map'), {
         zoom: 16,
         center: restaurant.latlng,
-        scrollwheel: false
+        scrollwheel: false,
+        title: "Restaurant listing for " + restaurant.name
       });
       fillBreadcrumb();
       DBHelper.mapMarkerForRestaurant(self.restaurant, self.map);
+      self.map.data.getMap().title = "Restaurant listing for " + restaurant.name;
     }
   });
 }
+
+/**
+ * Set focus for page elements on page load.
+ */
+ window.onload = () => {
+  document.getElementById("restaurant-name").focus();
+ }
 
 /**
  * Get current restaurant from page URL.
@@ -40,7 +49,7 @@ fetchRestaurantFromURL = (callback) => {
         return;
       }
       fillRestaurantHTML();
-      callback(null, restaurant)
+      callback(null, restaurant);
     });
   }
 }
@@ -55,12 +64,30 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
   const address = document.getElementById('restaurant-address');
   address.innerHTML = restaurant.address;
 
+  const picture = document.createElement('picture');
+  const sourceLarge = document.createElement('source');
+  sourceLarge.media = "(min-width: 960px)";
+  sourceLarge.srcset = DBHelper.imageSourceLargeForRestaurant(restaurant);
+
+  const sourceMedium = document.createElement('source');
+  sourceMedium.media = "(max-width: 960px)";
+  sourceMedium.srcset = DBHelper.imageSourceMediumForRestaurant(restaurant);
+
   const image = document.getElementById('restaurant-img');
   image.className = 'restaurant-img'
   image.src = DBHelper.imageUrlForRestaurant(restaurant);
+  image.alt = DBHelper.imageAltText(restaurant);
 
-  const cuisine = document.getElementById('restaurant-cuisine');
+  picture.append(sourceLarge);
+  picture.append(sourceMedium);
+  picture.append(image);
+
+
+  const cuisine = document.getElementById('restaurant-cuisine');  
   cuisine.innerHTML = restaurant.cuisine_type;
+
+  const container = document.getElementById('restaurant-container'); 
+  container.insertBefore(picture, cuisine);
 
   // fill operating hours
   if (restaurant.operating_hours) {
