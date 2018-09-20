@@ -26,7 +26,8 @@
     </section>
 
     <section>
-      <div class="filter-options">
+      <!-- tabindex set for skip link, otherwise tabbing follows page structure -->
+      <div class="filter-options" id="filter-options" tabindex="-1">
         <h2>Filter Results</h2>
         <label class="hidden" for="neighborhoods-select">Filter by Neighborhood</label>
         <select id="neighborhoods-select" name="neighborhoods" onchange="updateRestaurants()" role="listbox" aria-activedescendant="all" >

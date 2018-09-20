@@ -18,9 +18,11 @@
       <h1><a href="/">Restaurant Reviews</a></h1>
     </nav>
     <!-- Beginning breadcrumb -->
-    <ul id="breadcrumb" >
-      <li><a href="/">Home</a></li>
-    </ul>
+    <nav aria-label="breadcrumb">
+      <ul id="breadcrumb" >
+        <li><a href="/">Home</a></li>
+      </ul>
+    </nav>
     <!-- End breadcrumb -->
     <!-- End nav -->
   </header>
@@ -32,6 +34,7 @@
     <div class="grid-container">
       <!-- Beginning restaurant -->
       <section id="restaurant-container" gridorder="1">
+        <!-- tabindex set for skip link, otherwise tabbing follows page structure -->
         <h1 id="restaurant-name" tabindex="-1"></h1>
         <img id="restaurant-img">
         <p id="restaurant-cuisine"></p>
