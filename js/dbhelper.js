@@ -8,29 +8,47 @@ class DBHelper {
    * Change this to restaurants.json file location on your server.
    */
   static get DATABASE_URL() {
-    const port = 8000 // Change this to your server port
-    return `http://localhost:${port}/data/restaurants.json`;
+    // const port = 8000 // Change this to your server port
+    // return `http://localhost:${port}/data/restaurants.json`;
+    const port = 1337;
+    return `http://localhost:${port}/restaurants`
   }
 
   /**
    * Fetch all restaurants.
    */
   static fetchRestaurants(callback) {
-    let xhr = new XMLHttpRequest();
-    xhr.open('GET', DBHelper.DATABASE_URL);
-    xhr.onload = () => {
-      // Get a success response from server.
-      if (xhr.status === 200) { 
-        const json = JSON.parse(xhr.responseText);
-        const restaurants = json.restaurants;
-        callback(null, restaurants);
+
+    // Check if the data has been cached in IndexedDB
+    dbPromise.then(function(db) {
+      var tx = db.transaction('restaurants');
+      var keyValStore = tx.objectStore('restaurants');
+      return keyValStore.getAll();
+    }).then(function(val) {
+
+      console.log('The value of val is:', val);
+
+      if (val.length == 0){
+        fetch(DBHelper.DATABASE_URL).then( function(response){
+          if(response.ok){
+            response.json().then(function(json){
+              const restaurants = json;
+              callback(null, restaurants);
+            })
+          } else {
+            // Get an error from server.
+            const error = (`Request failed. Returned status of ${response.status}`);
+            callback(error, null);
+          }
+        });    
       } else {
-        // Get an error from server.
-        const error = (`Request failed. Returned status of ${xhr.status}`);
-        callback(error, null);
+        console.log('returning data from indexedDB');
+        callback(null, val);
       }
-    };
-    xhr.send();
+
+      
+    });
+
   }
 
   /**
@@ -162,8 +180,10 @@ class DBHelper {
    */
   static imageSourceLargeForRestaurant(restaurant) {
     let photo_source = restaurant.photograph;
-    photo_source = photo_source.replace(".jpg", "");
-    photo_source = `/img/${photo_source}-800_large_2x.jpg 2x, /img/${photo_source}-800_large_1x.jpg`;
+    if (photo_source != undefined){
+      photo_source = photo_source.replace(".jpg", "");
+      photo_source = `/img/${photo_source}-800_large_2x.jpg 2x, /img/${photo_source}-800_large_1x.jpg`;
+    }
     return photo_source;
   }
 
@@ -172,8 +192,10 @@ class DBHelper {
    */
   static imageSourceMediumForRestaurant(restaurant) {
     let photo_source = restaurant.photograph;
-    photo_source = photo_source.replace(".jpg", "");
-    photo_source = `/img/${photo_source}-600_medium_2x.jpg 2x, /img/${photo_source}-600_medium_1x.jpg`;
+    if (photo_source != undefined){
+      photo_source = photo_source.replace(".jpg", "");
+      photo_source = `/img/${photo_source}-600_medium_2x.jpg 2x, /img/${photo_source}-600_medium_1x.jpg`;
+    }
     return photo_source;
   }
 
