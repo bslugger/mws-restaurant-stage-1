@@ -1,0 +1,21 @@
+{
+  "short_name": "EN MWS App",
+  "name": "Edgar's Udacity Mobile Web Specialist Restaurant Application",
+  "start_url": "/",
+  "background_color": "#252831",
+  "display": "standalone",
+  "scope": "/",
+  "theme_color": "#252831",
+  "icons": [
+    {
+      "src": "/img/idi-icon-sm.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/img/idi-icon-md.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ]
+}

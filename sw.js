@@ -9,8 +9,9 @@ self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(staticCacheName).then( cache => {
       return cache.addAll([
+        '/',
         '/data',
-        '/js/main.js',
+        '/dist',
         '/css/styles.css',
         '/img',
         '/index.html',
@@ -43,6 +44,7 @@ self.addEventListener('activate', event => {
 * from: https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API/Using_Service_Workers#Recovering_failed_requests
 **/
 self.addEventListener('fetch', event => {
+  // console.log(event.request.url);
   event.respondWith(
     caches.match(event.request).then( response => {
       return response || fetch(event.request);

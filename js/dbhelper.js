@@ -26,8 +26,6 @@ class DBHelper {
       return keyValStore.getAll();
     }).then(function(val) {
 
-      console.log('The value of val is:', val);
-
       if (val.length == 0){
         fetch(DBHelper.DATABASE_URL).then( function(response){
           if(response.ok){
@@ -42,7 +40,7 @@ class DBHelper {
           }
         });    
       } else {
-        console.log('returning data from indexedDB');
+        // console.log('returning data from indexedDB');
         callback(null, val);
       }
 

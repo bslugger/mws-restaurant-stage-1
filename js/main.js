@@ -5,35 +5,13 @@ let map;
 let markers = [];
 
 /**
- * Fetch neighborhoods and cuisines as soon as the page is loaded.
- */
-document.addEventListener('DOMContentLoaded', (event) => {
-  fetchNeighborhoods();
-  fetchCuisines();
-  registerServiceWorker();
-
-  // Place the script in the head if there is online access, otherwise
-  // call the function that would have been executed in the script's callback
-  if( navigator.onLine ){
-    const script = document.createElement('script');
-    script.src = '//maps.googleapis.com/maps/api/js?key=AIzaSyDEzTdwKnrAUxK8CHLf8lWcDC-dgI3QiYk&libraries=places&callback=initMap';
-    script.async = false;
-    script.defer = true;
-    document.head.appendChild(script);
-  } else {
-    updateRestaurants();
-  }
-});
-
-
-/**
  * Fetch the script that installs the service worker
  */
 registerServiceWorker = () => {
   if ('serviceWorker' in navigator) {
     // Register a service worker hosted at the root of the
     // site using the default scope.
-    navigator.serviceWorker.register('/js/sw/sw.js').then( registration => {
+    navigator.serviceWorker.register('/sw.js').then( registration => {
       console.log('Service worker registration succeeded:', registration);
     }, /*catch*/ error => {
       console.log('Service worker registration failed:', error);
@@ -233,3 +211,24 @@ addMarkersToMap = (restaurants = self.restaurants) => {
     self.markers.push(marker);
   });
 }
+
+/**
+ * Fetch neighborhoods and cuisines as soon as the page is loaded.
+ */
+document.addEventListener('DOMContentLoaded', (event) => {
+  fetchNeighborhoods();
+  fetchCuisines();
+  registerServiceWorker();
+
+  // Place the script in the head if there is online access, otherwise
+  // call the function that would have been executed in the script's callback
+  if( navigator.onLine ){
+    const script = document.createElement('script');
+    script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyDEzTdwKnrAUxK8CHLf8lWcDC-dgI3QiYk&libraries=places&callback=initMap';
+    script.async = false;
+    script.defer = true;
+    document.head.appendChild(script);
+  } else {
+    updateRestaurants();
+  }
+});

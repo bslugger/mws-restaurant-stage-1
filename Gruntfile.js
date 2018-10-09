@@ -14,6 +14,40 @@ module.exports = function(grunt) {
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
 
+    concat: {
+      dist: {
+        options: {
+          banner: '/* Concatenating all js files */\n'
+        },
+        files: {
+          'dist/sw.js': ["js/sw.js"],
+          'dist/idb.js': ["js/idb.js"],
+          'dist/script-main.js': ["js/*.js", "!js/restaurant_info.js", "!js/idb.js", "!js/sw.js"],
+          'dist/script-details.js': ["js/*.js", "!js/main.js", "!js/idb.js", "!js/sw.js"],
+        },
+      //   src : ["js/idb.js", "js/*.js"],
+      //   dest : "dist/script.js"
+      },
+      // sw : {
+      //   src : ["js/sw/sw.js"],
+      //   dest : "dist/sw/sw.js"
+      // }
+    },
+
+    uglify: {
+      dist: {
+        options: {
+          banner: '/* Uglifying all js files */\n'
+        },
+        files: {
+          'dist/sw.min.js': ["dist/sw.js"],
+          'dist/idb.min.js': ["dist/idb.js"],
+          'dist/script-main.min.js': ['dist/script-main.js'],
+          'dist/script-details.min.js': ['dist/script-details.js'],
+        },
+      }
+    },
+
     responsive_images: {
       dev: {
         options: {
@@ -62,10 +96,13 @@ module.exports = function(grunt) {
 
   });
 
+  grunt.loadNpmTasks('grunt-contrib-concat');
+  grunt.loadNpmTasks('grunt-contrib-uglify-es');
   grunt.loadNpmTasks('grunt-responsive-images');
   grunt.loadNpmTasks('grunt-contrib-clean');
   grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-mkdir');
-  grunt.registerTask('default', ['clean', 'mkdir', 'responsive_images']);
+
+  grunt.registerTask('default', ['concat', 'clean', 'mkdir', 'responsive_images']);
 
 };

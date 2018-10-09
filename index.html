@@ -2,13 +2,15 @@
 <html lang="en">
 
 <head>
+  <meta name="theme-color" content="#252831"/>
   <title>Restaurant Reviews</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta charset="utf-8">
   <meta name="description" content="A website that lets users navigate a map to find information and reviews for restaurants in New York City.">
 
-  <link rel="stylesheet" src="//normalize-css.googlecode.com/svn/trunk/normalize.css" />
+  <link rel="stylesheet" src="https://normalize-css.googlecode.com/svn/trunk/normalize.css" />
   <link rel="stylesheet" href="css/styles.css">
+  <link rel="manifest" href="manifest.json">
 </head>
 
 <body id="bodycontent">
@@ -46,11 +48,10 @@
     Copyright (c) 2018 <a href="/"><strong>Restaurant Reviews</strong></a> All Rights Reserved.
   </footer>
 
-  <script src="js/idb.js"></script>
-  <script src="js/dbhelper.js"></script>
-  <script src="js/idb-setup.js"></script>
-  <script src="js/main.js"></script>
-  <!-- <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDEzTdwKnrAUxK8CHLf8lWcDC-dgI3QiYk&libraries=places&callback=initMap"></script> -->
+  <!-- Beginning scripts -->
+  <script src="dist/idb.min.js"></script>
+  <script src="sw.js"></script>
+  <script src="dist/script-main.min.js"></script>
 
 </body>
 

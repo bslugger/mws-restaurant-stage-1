@@ -12,5 +12,5 @@ dbPromise.then(function(db) {
     return tx.complete;
   });  
 }).then(function() {
-  console.log('Restaurants added');
+  // console.log('Restaurants added');
 });
