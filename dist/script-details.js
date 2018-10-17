@@ -9,10 +9,107 @@ class DBHelper {
    * Change this to restaurants.json file location on your server.
    */
   static get DATABASE_URL() {
-    // const port = 8000 // Change this to your server port
-    // return `http://localhost:${port}/data/restaurants.json`;
     const port = 1337;
     return `http://localhost:${port}/restaurants`
+  }
+
+  static get DATABASE_REVIEWS_URL() {
+    const port = 1337;
+    return `http://localhost:${port}/reviews`
+  }
+
+  static updateFavorite(isFavorite, restaurantId) {
+    let url  = '';
+    let requestBody = '';
+    console.log(restaurantId);
+    console.log(isFavorite);
+    if (isFavorite === false) {
+      url = DBHelper.DATABASE_URL+'/'+restaurantId+'/?is_favorite=true'
+      requestBody = {"is_favorite": true};
+    } else {
+      url = DBHelper.DATABASE_URL+'/'+restaurantId+'/?is_favorite=false'
+      requestBody = {"is_favorite": false};
+    }
+
+    const faveRequest = new Request( url , {
+      method: 'POST',
+      body: requestBody
+    });
+
+    fetch(faveRequest).then( function(response){
+      if(response.ok){
+        response.json().then(function(json){
+          console.log(json);
+          const el = document.getElementById('star-'+restaurantId);
+          if (json.is_favorite == "true") {
+            el.classList.remove('far');
+            el.classList.add('fas');
+            updateRestaurant(json);
+          } else {
+            el.classList.remove('fas');
+            el.classList.add('far');
+            updateRestaurant(json);
+          }
+        })
+      }
+    });
+
+  }
+
+  static addReview(reviewForm, restaurantId) {
+    let url  = DBHelper.DATABASE_REVIEWS_URL+'/?restaurant_id='+restaurantId;
+    let requestBody = '';
+
+    console.log(reviewForm);
+    console.log(restaurantId);
+
+    const reviewRequest = new Request( url , {
+      method: 'POST',
+      body: reviewForm
+    });
+
+    fetch(reviewRequest).then( function(response) {
+      if(response.ok){
+        response.json().then(function(json){
+
+          json.comments = reviewForm.comments;
+          json.name = reviewForm.name;
+          json.rating = reviewForm.rating;
+          json.restaurant_id = reviewForm.restaurant_id;
+          console.log(json);
+
+          dbPromise.then(function(db) {
+            var tx = db.transaction('reviews', 'readwrite');
+            var reviewsStore = tx.objectStore('reviews');
+            reviewsStore.put(json); 
+            return tx.complete;
+          }).then( () => {
+            console.log('Review added');
+          });
+        })
+      }
+    });
+
+  }
+
+  /**
+   * Fetch all favorite restaurants.
+   */
+  static fetchFavorites(restaurant) {
+    fetch(DBHelper.DATABASE_URL+"/?is_favorite=true").then( function(response){
+      if(response.ok){
+        response.json().then(function(json){
+          const faveRestaurants = json;
+          // callback(null, restaurants);
+          return faveRestaurants;
+        })
+      } else {
+        // Get an error from server.
+        const error = (`Request failed. Returned status of ${response.status}`);
+        // callback(error, null);
+        return
+      }
+    });
   }
 
   /**
@@ -51,6 +148,41 @@ class DBHelper {
   }
 
   /**
+   * Fetch all restaurant reviews
+   */
+  static fetchReviews(callback) {
+
+    // Check if the data has been cached in IndexedDB
+    dbPromise.then(function(db) {
+      var tx = db.transaction('reviews');
+      var keyValStore = tx.objectStore('reviews');
+      return keyValStore.getAll();
+    }).then(function(val) {
+
+      if (val.length == 0){
+        fetch(DBHelper.DATABASE_REVIEWS_URL).then( function(response){
+          if(response.ok){
+            response.json().then(function(json){
+              const reviews = json;
+              callback(null, reviews);
+            })
+          } else {
+            // Get an error from server.
+            const error = (`Request failed. Returned status of ${response.status}`);
+            callback(error, null);
+          }
+        });    
+      } else {
+        // console.log('returning data from indexedDB');
+        callback(null, val);
+      }
+
+      
+    });
+
+  }
+
+  /**
    * Fetch a restaurant by its ID.
    */
   static fetchRestaurantById(id, callback) {
@@ -66,6 +198,27 @@ class DBHelper {
         } else {
           // Restaurant does not exist in the database.
           callback('Restaurant does not exist', null);
+        }
+      }
+    });
+  }
+
+  /**
+   * Fetch a restaurant by its ID.
+   */
+  static fetchReviewsById(id, callback) {
+    // Fetch all reviews with proper error handling.
+    DBHelper.fetchReviews((error, reviews) => {
+      if (error) {
+        callback(error, null);
+      } else {
+        const filteredReviews = reviews.filter(r => r.restaurant_id == id);
+        if (filteredReviews) {
+          // Received the reviews.
+          callback(null, filteredReviews);
+        } else {
+          // Reviews do not exist in the database.
+          callback('Reviews do not exist', null);
         }
       }
     });
@@ -223,22 +376,50 @@ class DBHelper {
 }
 
 // create open line to indexedDB API
-var dbPromise = idb.open('test-db', 1, function(upgradeDb) {
-    var store = upgradeDb.createObjectStore('restaurants', { keyPath: 'id'});
+let dbPromise = idb.open('test-db', 1, (upgradeDb) => {
+    let store = upgradeDb.createObjectStore('restaurants', { keyPath: 'id'});
+    let reviewsStore = upgradeDb.createObjectStore('reviews', { keyPath: 'id'});
   });
 
 // add restaurant to "restaurants"
-dbPromise.then(function(db) {
-  return DBHelper.fetchRestaurants( function(error, restaurantsJson){
-    var tx = db.transaction('restaurants', 'readwrite');
-    var restaurantsStore = tx.objectStore('restaurants');
+dbPromise.then( (db) => {
+  return DBHelper.fetchRestaurants( (error, restaurantsJson) => {
+    let tx = db.transaction('restaurants', 'readwrite');
+    let restaurantsStore = tx.objectStore('restaurants');
     restaurantsJson.forEach( restaurant => restaurantsStore.put(restaurant) )   
     return tx.complete;
   });  
-}).then(function() {
-  // console.log('Restaurants added');
+}).then( () => {
+  console.log('Restaurants added');
 });
+
+// add reviews to "reviews"
+dbPromise.then( (db) => {
+  return DBHelper.fetchReviews( (error, reviewsJson) => {
+    let tx = db.transaction('reviews', 'readwrite');
+    let reviewsStore = tx.objectStore('reviews');
+    reviewsJson.forEach( review => reviewsStore.put(review) )   
+    return tx.complete;
+  });  
+}).then( () => {
+  console.log('Reviews added');
+});
+
+let updateRestaurant = (restaurantJson) => {
+	dbPromise.then( (db) => {
+		let tx = db.transaction('restaurants', 'readwrite');
+    	let restaurantsStore = tx.objectStore('restaurants');
+    	restaurantsStore.put(restaurantJson);
+    	return tx.complete;
+	}).then( () => {
+		console.log('Restaurant ' + restaurantJson.id + ' updated. Favorite is ' + restaurantJson.is_favorite);
+	});
+};
+
+
 let restaurant;
+let reviews;
+let reviewForm;
 
 /**
  * Initialize Google map, called from HTML.
@@ -307,6 +488,15 @@ fetchRestaurantFromURL = (callback) => {
       fillRestaurantHTML();
       callback(null, restaurant);
     });
+    DBHelper.fetchReviewsById(id, (error, reviews) => {
+      self.reviews = reviews;
+      if (!reviews) {
+        console.error(error);
+        return;
+      }
+      fillReviewsHTML();
+      callback(null, reviews);
+    })
   }
 }
 
@@ -349,8 +539,6 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
   if (restaurant.operating_hours) {
     fillRestaurantHoursHTML();
   }
-  // fill reviews
-  fillReviewsHTML();
 }
 
 /**
@@ -376,7 +564,7 @@ fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hours) => 
 /**
  * Create all reviews HTML and add them to the webpage.
  */
-fillReviewsHTML = (reviews = self.restaurant.reviews) => {
+fillReviewsHTML = (reviews = self.reviews) => {
   const container = document.getElementById('reviews-container');
   const title = document.createElement('h2');
   title.innerHTML = 'Reviews';
@@ -393,6 +581,38 @@ fillReviewsHTML = (reviews = self.restaurant.reviews) => {
     ul.appendChild(createReviewHTML(review));
   });
   container.appendChild(ul);
+
+  const reviewContainer = document.getElementById('review-form-container');
+  reviewContainer.parentNode.removeChild(reviewContainer);
+  container.appendChild(reviewContainer);
+
+  const submitButton = document.getElementById('submit-button');
+
+  submitButton.addEventListener("click", () => {
+    const reviewerName = document.getElementById('reviewer-name').value;
+    const reviewerRating = document.getElementById('rating').value;
+    const reviewerText = document.getElementById('review-textarea').value;
+
+    reviewForm = {
+      "restaurant_id": self.restaurant.id,
+      "name": reviewerName,
+      "rating": reviewerRating,
+      "comments": reviewerText
+    };
+    const li = createReviewHTML(reviewForm);
+    ul.appendChild(li);
+
+    let online = navigator.onLine ? "online" : "offline";
+
+    if (online == 'online') {
+      DBHelper.addReview(reviewForm, self.restaurant.id);
+    } 
+    // else let the online event listener send it once the app goes back online
+  });
+
+  window.addEventListener('online', () => {
+    DBHelper.addReview(reviewForm, self.restaurant.id);
+  });
 }
 
 /**
@@ -405,7 +625,7 @@ createReviewHTML = (review) => {
   li.appendChild(name);
 
   const date = document.createElement('p');
-  date.innerHTML = review.date;
+  date.innerHTML = new Date(review.updatedAt);
   li.appendChild(date);
 
   const rating = document.createElement('p');

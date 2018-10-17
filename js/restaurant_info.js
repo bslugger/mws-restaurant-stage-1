@@ -1,4 +1,6 @@
 let restaurant;
+let reviews;
+let reviewForm;
 
 /**
  * Initialize Google map, called from HTML.
@@ -67,6 +69,15 @@ fetchRestaurantFromURL = (callback) => {
       fillRestaurantHTML();
       callback(null, restaurant);
     });
+    DBHelper.fetchReviewsById(id, (error, reviews) => {
+      self.reviews = reviews;
+      if (!reviews) {
+        console.error(error);
+        return;
+      }
+      fillReviewsHTML();
+      callback(null, reviews);
+    })
   }
 }
 
@@ -109,8 +120,6 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
   if (restaurant.operating_hours) {
     fillRestaurantHoursHTML();
   }
-  // fill reviews
-  fillReviewsHTML();
 }
 
 /**
@@ -136,7 +145,7 @@ fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hours) => 
 /**
  * Create all reviews HTML and add them to the webpage.
  */
-fillReviewsHTML = (reviews = self.restaurant.reviews) => {
+fillReviewsHTML = (reviews = self.reviews) => {
   const container = document.getElementById('reviews-container');
   const title = document.createElement('h2');
   title.innerHTML = 'Reviews';
@@ -153,6 +162,38 @@ fillReviewsHTML = (reviews = self.restaurant.reviews) => {
     ul.appendChild(createReviewHTML(review));
   });
   container.appendChild(ul);
+
+  const reviewContainer = document.getElementById('review-form-container');
+  reviewContainer.parentNode.removeChild(reviewContainer);
+  container.appendChild(reviewContainer);
+
+  const submitButton = document.getElementById('submit-button');
+
+  submitButton.addEventListener("click", () => {
+    const reviewerName = document.getElementById('reviewer-name').value;
+    const reviewerRating = document.getElementById('rating').value;
+    const reviewerText = document.getElementById('review-textarea').value;
+
+    reviewForm = {
+      "restaurant_id": self.restaurant.id,
+      "name": reviewerName,
+      "rating": reviewerRating,
+      "comments": reviewerText
+    };
+    const li = createReviewHTML(reviewForm);
+    ul.appendChild(li);
+
+    let online = navigator.onLine ? "online" : "offline";
+
+    if (online == 'online') {
+      DBHelper.addReview(reviewForm, self.restaurant.id);
+    } 
+    // else let the online event listener send it once the app goes back online
+  });
+
+  window.addEventListener('online', () => {
+    DBHelper.addReview(reviewForm, self.restaurant.id);
+  });
 }
 
 /**
@@ -165,7 +206,7 @@ createReviewHTML = (review) => {
   li.appendChild(name);
 
   const date = document.createElement('p');
-  date.innerHTML = review.date;
+  date.innerHTML = new Date(review.updatedAt);
   li.appendChild(date);
 
   const rating = document.createElement('p');

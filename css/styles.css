@@ -80,6 +80,12 @@ article, aside, canvas, details, figcaption, figure, footer, header, hgroup, men
   display: none;
 }
 
+.fa-style {
+  color: orange;
+  float: right;
+  padding-right: 10px;
+}
+
 
 /* ====================== Navigation ====================== */
 nav {
@@ -344,6 +350,42 @@ nav h1 a {
 
 #restaurant-hours td {
   color: #666;
+}
+
+#review-form-container {
+  margin-bottom: 20px;
+  width: 75%;
+}
+
+.range-ticks {
+  padding-left: 20px;
+  display: inline;
+  margin: 10px 0;
+}
+
+#review-textarea{
+  border: 1px solid #cccccc;
+  width: 65%;
+  margin-left: 10px;
+  height: 50px;
+
+}
+
+#submit-button{
+  padding: 15px;
+  background-color: #f58500;
+  color: white;
+  font-weight: 700;
+  border-radius: 4px;
+  width: 85%;
+}
+
+#reviewer-name {
+  margin: 0 20px 20px;
+}
+
+.textarea-area label{
+  vertical-align: top;
 }
 
 /* ====================== Media Queries ====================== */

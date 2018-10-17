@@ -21,7 +21,6 @@ registerServiceWorker = () => {
   }
 }
 
-
 /**
  * Fetch all neighborhoods and set their HTML.
  */
@@ -156,7 +155,9 @@ fillRestaurantsHTML = (restaurants = self.restaurants) => {
  * Create restaurant HTML as its own list item, with responsive images
  */
 createRestaurantHTML = (restaurant) => {
+  // restaurant.is_favorite = false;
   const li = document.createElement('li');
+  li.id = restaurant.id;
   const picture = document.createElement('picture');
 
   const sourceLarge = document.createElement('source');
@@ -183,8 +184,25 @@ createRestaurantHTML = (restaurant) => {
   link.className = "restaurant-link";
   link.innerHTML = restaurant.name;
   link.href = DBHelper.urlForRestaurant(restaurant);
+  const fave = document.createElement('i');
+  fave.id = "star-" + restaurant.id;
+  fave.dataset.id = restaurant.id;
+  fave.classList.add('fa-star','fa-style');
+
+  if ( restaurant.isFavorite ) {
+    fave.classList.add('fas');
+  } else {
+    fave.classList.add('far');
+  }
+
+  fave.addEventListener("click", function(){
+      const isFavorite = this.classList.contains('fas');
+      const id = this.dataset.id;
+      DBHelper.updateFavorite(isFavorite, id);
+    });
   
   name.append(link);
+  name.append(fave);
   li.append(name);
 
   const neighborhood = document.createElement('p');
@@ -194,6 +212,8 @@ createRestaurantHTML = (restaurant) => {
   const address = document.createElement('p');
   address.innerHTML = restaurant.address;
   li.append(address);
+
+
 
   return li
 }

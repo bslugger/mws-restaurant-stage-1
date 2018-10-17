@@ -13,6 +13,7 @@
   <!-- Main CSS file -->
   <link rel="stylesheet" href="css/styles.css" type="text/css">
   <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.1/css/all.css" integrity="sha384-5sAR7xN1Nv6T6+dT2mhtzEpVJvfS3NScPQTrOxhwjIuvcA67KV2R5Jz6kr4abQsz" crossorigin="anonymous">
 </head>
 
 <body class="inside" id="bodycontent">
@@ -57,6 +58,43 @@
       <!-- Beginning reviews -->
       <section id="reviews-container" gridorder="3">
         <ul id="reviews-list"></ul>
+
+        <div id="review-form-container">
+          <h3>Leave A Review...</h3>
+
+          <form id="review-form" name="submit-review" method="POST" action="/review">
+
+            <label for="reviewer-name">Name</label>
+            <input type="text" name="reviewer-name" id="reviewer-name">
+            <br>
+
+            <label for="rating">Rating</label>
+            <div class="range-ticks">
+              <span>1</span>
+              <input type="range" min="1" value="1" max="5" step="1" list="tickmarks" id="rating">
+              <datalist id="tickmarks">
+                <option value="1" label="1">
+                <option value="2">
+                <option value="3" label="3">
+                <option value="4">
+                <option value="5" label="5">
+              </datalist>
+              <span>5</span>
+            </div>
+
+            <p class="textarea-area">
+              <label for="review-textarea">Review</label>
+              <textarea name="message" id="review-textarea">
+              </textarea>
+            </p>
+
+            <button type="button" id="submit-button">Submit Review</button>
+
+          </form>
+        </div>
+
+      </section>
+      <section id="reviews-input" gridorder="4">
       </section>
       <!-- End reviews -->
     </div>
@@ -73,6 +111,9 @@
   <script src="dist/idb.min.js"></script>
   <script src="sw.js"></script>
   <script src="dist/script-details.min.js"></script>
+<!--   <script src="js/idb-setup.js"></script>
+  <script src="js/dbhelper.js"></script>
+  <script src="js/restaurant_info.js"></script> -->
 
 </body>
 
